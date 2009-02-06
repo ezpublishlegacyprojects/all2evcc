@@ -1,5 +1,5 @@
 <?php
-include_once("extension/all2evarnish/classes/all2evccclass.php");
+include_once("extension/all2evcc/classes/all2evccclass.php");
 
 class varnishType extends eZWorkflowEventType
 {
