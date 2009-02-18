@@ -49,8 +49,10 @@ class varnishType extends eZWorkflowEventType
     
     function cleanUp()
     {
+        $ini = eZINI::instance( "all2evarnish.ini" );
+        $blocknames = $ini->variable( "WorkflowSettings", "VarnishDomains" );
         $varnish = new all2eVarnish();
-        $varnish->purgeDomain();
+        $varnish->purgeDomain($blocknames);
     }
 }
 

@@ -13,7 +13,7 @@ class all2eVarnish
     public $hostname;
     public $port;
     public $timeout;
-    public $domainname;
+    public $domainnames;
     
     
     /*
@@ -33,7 +33,7 @@ class all2eVarnish
     function readOutSettings()
     {
         $ini = eZINI::instance( "all2evarnish.ini" );
-        list( $this->hostname, $this->port, $this->timeout, $this->domainname) = $ini->variableMulti( "ServerSettings", array( "Host", "Port", "TimeOut", "VarnishDomainName" ) );
+        list( $this->hostname, $this->port, $this->timeout ) = $ini->variableMulti( "ServerSettings", array( "DefaultHost", "DefaultPort", "DefaultTimeOut" ) );
     }
     
     /*
@@ -115,13 +115,29 @@ class all2eVarnish
     }
     
     /*
-        function purgeHash():
-        Clears the cache for the given Settings
+        function purgeDomain():
+        Clears the cache for the given Blocknames
     */
-    function purgeDomain()
+    function purgeDomain($blocknames=array("default"))
     {
-        $request = "purge.hash ".$this->domainname."\r\n";
-        $erg = $this->execute( $request, $this->hostname, $this->port, $this->timeout );
+        $erg = array();
+        
+        if( !is_array($blocknames) )
+        {
+            $blocknames = array($blocknames);
+        }
+        foreach( $blocknames as $blockname )
+        {
+            $ini = eZINI::instance( "all2evarnish.ini" );
+            list( $this->hostname, $this->port, $this->timeout, $this->domainnames ) = $ini->variableMulti( $blockname, array( "Host", "Port", "TimeOut", "VarnishDomainNames" ) );
+            
+            foreach($this->domainnames as $dN)
+            {
+                $request = "purge.hash ".$dN."\r\n";
+                $erg[] = $this->execute( $request, $this->hostname, $this->port, $this->timeout );
+            }
+        }
+        
         return $erg;
     }
     
@@ -136,7 +152,7 @@ class all2eVarnish
         {
             eZDebug::writeDebug( "No settings were given, take default from the ini" );
             $ini = eZINI::instance( "all2evarnish.ini" );
-            list( $host, $port, $timeout ) = $ini->variableMulti( "ServerSettings", array( "Host", "Port", "TimeOut" ) );
+            list( $host, $port, $timeout ) = $ini->variableMulti( "ServerSettings", array( "DefaultHost", "DefaultPort", "DefaultTimeOut" ) );
         }
         
         eZDebug::writeNotice( "Connecting to Server ".$host.":".$port." with request: ".$request );

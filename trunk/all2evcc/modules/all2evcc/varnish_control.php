@@ -26,7 +26,16 @@ switch ($view)
     {
         if( $Module->isCurrentAction( 'PurgeVarnishHash' ) )
         {
-            $erg = $varnish->purgeDomain();
+            $http = eZHTTPTool::instance();
+            if( $http->hasPostVariable( 'DomainName' ) && trim($http->postVariable( 'DomainName' )) != "" )
+            {
+                $blockname = $http->postVariable( 'DomainName' );
+            }
+            else
+            {
+                $blockname = "default";
+            }
+            $erg = $varnish->purgeDomain($blockname);
         }
         elseif( $Module->isCurrentAction( 'PurgeVarnishUrl' ) )
         {
